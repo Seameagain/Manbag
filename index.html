@@ -1,13 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-  <title>Code Market</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <title>Marketplace</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h1>🔥 Marketplace ขายโค้ด</h1>
-<div id="products"></div>
 
-<script src="js/app.js"></script>
+  <div class="container">
+    <h1 id="welcome">กำลังโหลด...</h1>
+
+    <div id="products" class="grid"></div>
+  </div>
+
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
 </body>
 </html>
