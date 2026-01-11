@@ -33,3 +33,8 @@ export default async function handler(req, res) {
 
   res.json({ url: session.url });
 }
+const session = await stripe.checkout.sessions.create({
+  ...
+  allow_promotion_codes: true,   // 👈 แค่นี้!
+  ...
+});
