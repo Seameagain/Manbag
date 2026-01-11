@@ -1,70 +1,65 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <title>Marketplace</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<title>Marketplace</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <h1 id="welcome">กำลังโหลด...</h1>
+<h1 id="welcome">กำลังโหลด...</h1>
 <div id="products"></div>
 
-  <!-- Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = "https://azmodrfrleszxxqrihfu.supabase.co"
-const SUPABASE_KEY = "PASTE_ANON_KEY"
+const supabase = supabase.createClient(
+  "https://azmodrfrleszxxqrihfu.supabase.co",
+  "PASTE_ANON_PUBLIC_KEY"
+);
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+async function init() {
+  try {
+    const { data } = await supabase.auth.getSession();
 
-async function load() {
-  const { data, error } = await supabase.auth.getSession()
+    if (!data.session) {
+      document.getElementById("welcome").innerText = "กรุณาเข้าสู่ระบบก่อน";
+      return;
+    }
 
-  if (!data.session) {
-    window.location = "/login.html"
-    return
+    const user = data.session.user;
+    document.getElementById("welcome").innerText =
+      `สวัสดีคุณ ${user.user_metadata.full_name || user.email} ซื้ออะไรดี`;
+
+    loadProducts();
+  } catch (err) {
+    console.error("Supabase error:", err.message);
+    document.getElementById("welcome").innerText =
+      "เกิดข้อผิดพลาด ลอง refresh";
   }
-
-  const user = data.session.user
-
-  document.getElementById("welcome").innerText =
-    `สวัสดีคุณ ${user.user_metadata.name || user.email} ซื้ออะไรดี`
-
-  loadProducts()
 }
 
 async function loadProducts() {
   const { data, error } = await supabase
     .from("products")
-    .select("*")
+    .select("*");
 
   if (error) {
-    alert(error.message)
-    return
+    document.getElementById("products").innerText = error.message;
+    return;
   }
 
-  document.getElementById("products").innerHTML = data.map(p => `
-    <div class="card">
-      <h3>${p.title}</h3>
-      <p>${p.price} บาท</p>
-      <button onclick="buy('${p.id}')">ซื้อ</button>
-    </div>
-  `).join("")
+  document.getElementById("products").innerHTML =
+    data.map(p => `
+      <div class="card">
+        <h3>${p.title}</h3>
+        <p>${p.description}</p>
+        <p>${p.price} บาท</p>
+      </div>
+    `).join("");
 }
 
-async function buy(id) {
-  const res = await fetch("/api/create-checkout", {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ productId:id })
-  })
-
-  const data = await res.json()
-  window.location = data.url
-}
-
-load()
+init();
 </script>
+
+</body>
+</html>
