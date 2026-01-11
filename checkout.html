@@ -1,0 +1,19 @@
+<h2>ตะกร้าของคุณ</h2>
+<div id="items"></div>
+<button onclick="pay()">ชำระเงิน</button>
+
+<script>
+const cart = JSON.parse(localStorage.getItem("cart"));
+document.getElementById("items").innerHTML =
+ cart.map(i=>`<p>${i.title} - ${i.price} บาท</p>`).join("");
+
+function pay(){
+ fetch("/api/create-checkout",{
+  method:"POST",
+  body: JSON.stringify({cart}),
+  headers: {"Content-Type":"application/json"}
+ })
+ .then(r=>r.json())
+ .then(d=>location.href=d.url);
+}
+</script>
