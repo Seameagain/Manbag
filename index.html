@@ -18,44 +18,44 @@ const supabase = supabase.createClient(
 );
 
 async function init() {
-  try {
-    const { data } = await supabase.auth.getSession();
+  // ไม่ต้องรอ session ก่อนแสดงหน้า
+  const { data } = await supabase.auth.getSession().catch(()=>({data:null}));
 
-    if (!data.session) {
-      document.getElementById("welcome").innerText = "กรุณาเข้าสู่ระบบก่อน";
-      return;
-    }
-
-    const user = data.session.user;
+  if (data && data.session) {
     document.getElementById("welcome").innerText =
-      `สวัสดีคุณ ${user.user_metadata.full_name || user.email} ซื้ออะไรดี`;
-
-    loadProducts();
-  } catch (err) {
-    console.error("Supabase error:", err.message);
+      `สวัสดีคุณ ${data.session.user.user_metadata.full_name || data.session.user.email} ซื้ออะไรดี`;
+  } else {
     document.getElementById("welcome").innerText =
-      "เกิดข้อผิดพลาด ลอง refresh";
+      `สวัสดี! กรุณาเข้าสู่ระบบเพื่อดูสินค้าของคุณ`;
   }
+
+  loadProducts();
 }
 
 async function loadProducts() {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*");
-
+  const { data, error } = await supabase.from("products").select("*");
   if (error) {
     document.getElementById("products").innerText = error.message;
     return;
   }
+  document.getElementById("products").innerHTML = data.map(p => `
+    <div class="card">
+      <h3>${p.title}</h3>
+      <p>${p.price} บาท</p>
+      <button onclick="buy('${p.id}')">ซื้อ</button>
+    </div>
+  `).join("");
+}
 
-  document.getElementById("products").innerHTML =
-    data.map(p => `
-      <div class="card">
-        <h3>${p.title}</h3>
-        <p>${p.description}</p>
-        <p>${p.price} บาท</p>
-      </div>
-    `).join("");
+function buy(id) {
+  fetch("/api/create-checkout", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ productId: id })
+  })
+  .then(r=>r.json())
+  .then(d=>window.location = d.url)
+  .catch(err => console.error(err));
 }
 
 init();
