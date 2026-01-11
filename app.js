@@ -89,3 +89,10 @@ function buy(productId) {
     loadProducts();
   }
 })();
+let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+function addToCart(product){
+  cart.push(product);
+  localStorage.setItem("cart", JSON.stringify(cart));
+  alert("เพิ่มเข้าตะกร้าแล้ว");
+}
