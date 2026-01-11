@@ -16,9 +16,58 @@
 
   <!-- Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js"></script>
-</body>
-</html>
-<button onclick='addToCart(${JSON.stringify(p)})'>
-  ใส่ตะกร้า
-</button>
+
+<script>
+const SUPABASE_URL = "https://azmodrfrleszxxqrihfu.supabase.co"
+const SUPABASE_KEY = "PASTE_ANON_KEY"
+
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+async function load() {
+  const { data, error } = await supabase.auth.getSession()
+
+  if (!data.session) {
+    window.location = "/login.html"
+    return
+  }
+
+  const user = data.session.user
+
+  document.getElementById("welcome").innerText =
+    `สวัสดีคุณ ${user.user_metadata.name || user.email} ซื้ออะไรดี`
+
+  loadProducts()
+}
+
+async function loadProducts() {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+
+  if (error) {
+    alert(error.message)
+    return
+  }
+
+  document.getElementById("products").innerHTML = data.map(p => `
+    <div class="card">
+      <h3>${p.title}</h3>
+      <p>${p.price} บาท</p>
+      <button onclick="buy('${p.id}')">ซื้อ</button>
+    </div>
+  `).join("")
+}
+
+async function buy(id) {
+  const res = await fetch("/api/create-checkout", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ productId:id })
+  })
+
+  const data = await res.json()
+  window.location = data.url
+}
+
+load()
+</script>
