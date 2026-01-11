@@ -38,3 +38,13 @@ const session = await stripe.checkout.sessions.create({
   allow_promotion_codes: true,   // 👈 แค่นี้!
   ...
 });
+const session = await stripe.checkout.sessions.create({
+  ...
+  shipping_address_collection: {
+    allowed_countries: ["TH"]
+  },
+  phone_number_collection: {
+    enabled: true
+  },
+  ...
+});
